@@ -1,20 +1,20 @@
-# Veritas — AI Multi-Agent Research & Report Generation System
+# AgentForge — AI Multi-Agent Research & Report Generation System
 
 > **An intelligent multi-agent framework that searches, reads, critiques, and writes — transforming scattered internet information into structured, high-quality research reports.**
 
-Built for modern research workflows, Veritas combines multiple AI agents that collaborate like a real research team.
+Built for modern research workflows, **AgentForge** combines multiple AI agents that collaborate like a real research team.
 
-Instead of relying on a single AI model to do everything, Veritas divides responsibilities across specialized agents — improving clarity, scalability, and output quality.
+Instead of relying on a single AI model to do everything, AgentForge divides responsibilities across specialized agents, improving clarity, scalability, and output quality.
 
 ---
 
-# Why Veritas?
+# Why AgentForge?
 
-Research is rarely a linear process. Finding reliable information often requires navigating multiple sources, filtering noise, organizing scattered insights, and transforming raw content into something structured and meaningful.
+Research is rarely a linear process. Finding reliable information often requires navigating multiple sources, filtering noise, organizing scattered insights, and transforming raw information into something structured and meaningful.
 
-Veritas simplifies this workflow by dividing the research lifecycle into specialized AI responsibilities.
+AgentForge simplifies this workflow by dividing the research lifecycle into specialized AI responsibilities.
 
-Instead of depending on a single model to search, read, reason, summarize, and evaluate all at once, Veritas distributes these tasks across multiple agents that work together. Each agent focuses on one responsibility, creating a more organized, explainable, and reliable research pipeline.
+Instead of depending on a single model to search, read, reason, summarize, and evaluate everything at once, AgentForge distributes these tasks across multiple agents that work together. Each agent focuses on one responsibility, creating a more organized, explainable, and reliable research pipeline.
 
 This architecture improves consistency while making outputs easier to validate and extend.
 
@@ -22,7 +22,7 @@ This architecture improves consistency while making outputs easier to validate a
 
 # The Problem We Solve
 
-Large Language Models are powerful — but they often struggle when asked to:
+Large Language Models are powerful, but they often struggle when asked to:
 
 * Research deeply
 * Validate sources
@@ -32,13 +32,13 @@ Large Language Models are powerful — but they often struggle when asked to:
 
 Most AI outputs are generated in a single pass.
 
-Veritas introduces **collaborative intelligence**.
+**AgentForge introduces collaborative intelligence.**
 
-Instead of one AI doing everything poorly, multiple specialized agents work together efficiently.
+Instead of one AI doing everything, multiple specialized agents work together efficiently.
 
 ---
 
-# What Makes Veritas Different?
+# What Makes AgentForge Different?
 
 ### Traditional AI Workflow
 
@@ -46,7 +46,7 @@ Instead of one AI doing everything poorly, multiple specialized agents work toge
 User → One Prompt → One Response
 ```
 
-### Veritas Workflow
+### AgentForge Workflow
 
 ```text
 User Query
@@ -110,11 +110,11 @@ This layered architecture creates:
 
 ### Multi-Agent Collaboration
 
-Veritas uses a role-based architecture where every agent contributes to a specific stage of the research process. This separation of responsibilities improves clarity, reduces redundancy, and creates a more structured system compared to single-prompt workflows.
+AgentForge uses a role-based architecture where every agent contributes to a specific stage of the research process. This separation of responsibilities improves clarity, reduces redundancy, and creates a more structured system compared to single-prompt workflows.
 
 ### Intelligent Web Discovery
 
-The SearchAgent identifies relevant sources from across the web using query-driven retrieval. Instead of relying on manually curated links, the system dynamically gathers resources aligned with the user’s research topic.
+The SearchAgent identifies relevant sources from across the web using query-driven retrieval. Instead of relying on manually curated links, the system dynamically gathers resources aligned with the user's research topic.
 
 ### Structured Content Extraction
 
@@ -137,7 +137,7 @@ Each component functions independently, allowing developers to extend the system
 # Project Structure
 
 ```bash
-veersa-agent/
+agentforge/
 │
 ├── base_agent.py        # Core architecture shared by all agents
 ├── search_agent.py      # Web research agent
@@ -278,7 +278,7 @@ Before final output, CritiqueAgent reviews generated content for gaps and improv
 
 ```bash
 git clone <your-repository-url>
-cd veersa-agent
+cd agentforge
 ```
 
 ---
@@ -340,13 +340,13 @@ Final polished response
 
 # Future Scope
 
-Veritas is designed as a foundation for larger collaborative AI systems.
+AgentForge is designed as a foundation for larger collaborative AI systems.
 
 Future improvements include memory-enabled agents capable of retaining long-term context, asynchronous execution for faster multi-agent processing, and direct communication between agents to improve coordination.
 
 Additional enhancements may include knowledge graph integration, persistent storage layers, multi-document summarization, and adaptive orchestration where agents dynamically decide the next best action based on task complexity.
 
-These additions would move Veritas beyond a research assistant into a fully autonomous reasoning pipeline.
+These additions would move AgentForge beyond a research assistant into a fully autonomous reasoning pipeline.
 
 ---
 
@@ -372,13 +372,10 @@ MIT License
 
 # Final Thought
 
-Veritas demonstrates how complex tasks become more reliable when intelligence is distributed rather than centralized.
+AgentForge demonstrates how complex tasks become more reliable when intelligence is distributed rather than centralized.
 
-By separating research into discovery, extraction, writing and critique, the system mirrors how real teams collaborate — where specialization improves both quality and efficiency.
+By separating research into discovery, extraction, writing, and critique, the system mirrors how real teams collaborate, where specialization improves both quality and efficiency.
 
-Rather than functioning as a single-response AI tool, Veritas presents a scalable framework for building agent-driven research systems capable of producing structured, explainable, and high-quality outputs.
+Rather than functioning as a single-response AI tool, AgentForge presents a scalable framework for building agent-driven research systems capable of producing structured, explainable, and high-quality outputs.
 
 > Built to explore the future of collaborative AI orchestration.
-# AgentForge
-#   A g e n t F o r g e  
- 
