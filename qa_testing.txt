@@ -1,0 +1,125 @@
+Testing & Validation for Veritas
+Building a multi-agent system requires more than functional code — it requires confidence that every component behaves reliably both independently and as part of a larger workflow. Since Veritas relies on multiple agents working together to complete a research task, testing was designed to validate both individual agent correctness and system-wide coordination.
+The testing strategy focused on ensuring that the system produces stable outputs, handles failures gracefully, and maintains consistent behavior across different research scenarios.
+1. Manual Testing
+Manual testing was performed to validate the entire research lifecycle from the moment a user submits a query to the generation of the final refined report.
+The purpose of manual testing was to observe how data moves across agents in real execution conditions and confirm that each stage produces meaningful outputs without interrupting the pipeline.
+In Veritas, the workflow follows a sequential multi-agent structure:
+User Query
+    ↓
+SearchAgent
+    ↓
+ReaderAgent
+    ↓
+WriterAgent
+    ↓
+CritiqueAgent
+    ↓
+Final Research Output
+
+Testing began by submitting multiple research prompts of varying complexity. These prompts included broad topics, narrow technical questions, and research-oriented queries requiring multiple web sources.
+The SearchAgent was validated by confirming that it returned relevant search results and useful URLs related to the provided query. The ReaderAgent was then tested to ensure that webpage content could be extracted correctly from these URLs. Special attention was given to verifying that HTML-heavy pages, blogs, and article pages were cleaned properly and converted into usable text.
+The WriterAgent was evaluated by checking whether it transformed collected research into a structured markdown report. Reports were examined for readability, logical organization, section formatting, and coherence between extracted information.
+Finally, the CritiqueAgent was tested to confirm that it could review generated content, identify weaknesses, and improve the quality of the final response.
+
+Manual testing helped validate:
+
+End-to-end communication between agents
+Correct sequencing of workflow execution
+Data consistency between pipeline stages
+Stability during repeated execution
+Realistic usability from a user perspective
+
+The system completed the workflow successfully under normal conditions, producing research outputs without pipeline failure or interruption.
+2. Unit Testing
+While manual testing validates the entire system, unit testing focuses on validating each component independently.
+In Veritas, every agent performs a specific responsibility. Because each module is isolated by design, unit testing becomes essential for ensuring that one faulty component does not compromise the entire workflow.
+Each agent was tested independently using controlled inputs and expected outputs.
+SearchAgent Testing
+
+The SearchAgent was tested to ensure that it handles search requests reliably and returns structured results.
+
+Tests included validating:
+Proper execution when receiving a valid query
+Safe handling of empty or missing queries
+Correct parsing of API responses
+Stable formatting of returned search metadata
+
+The objective was to ensure that the agent consistently returns usable research sources regardless of query variations.
+
+ReaderAgent Testing
+
+ReaderAgent testing focused on content extraction reliability.
+
+Several webpage conditions were simulated to test how the agent behaves under different scenarios.
+
+Testing included:
+
+Extracting content from valid webpages
+Handling invalid URLs
+Processing empty or inaccessible pages
+Managing timeout scenarios gracefully
+
+The goal was to confirm that webpage parsing remains stable even when external content quality varies.
+
+WriterAgent Testing
+The WriterAgent was tested to ensure that research text could be converted into readable, organized documentation.
+Validation focused on:
+Markdown structure generation
+Logical section ordering
+Handling incomplete research inputs
+Maintaining consistent formatting
+
+The WriterAgent was expected to produce reports that remain readable even when input data is imperfect or partially incomplete.
+
+CritiqueAgent Testing
+
+CritiqueAgent testing focused on quality validation behavior.
+
+This included verifying that the agent could:
+
+Review generated reports
+Identify structural weaknesses
+Detect missing context
+Return constructive feedback
+
+Testing ensured that the critique stage acts as a meaningful refinement layer rather than simply repeating generated content.
+
+
+This test verifies whether ReaderAgent successfully processes a valid webpage input and returns a successful response structure.
+
+3. API Testing
+Veritas depends on external APIs for search retrieval and language generation. Because third-party services can introduce instability, API testing was performed to validate integration reliability.
+The system integrates with:
+SerpAPI for search functionality
+Groq API for language generation and critique workflows
+
+API testing focused on validating both successful and failure conditions.
+The following behaviors were tested:
+Successful API authentication using valid keys
+Response parsing and JSON formatting
+Timeout handling
+Invalid key handling
+Missing or incomplete API responses
+
+Testing confirmed that the system does not fail silently when an API error occurs. Instead, meaningful error handling allows the workflow to terminate safely or return structured feedback.
+This validation is important because multi-agent systems depend heavily on external communication reliability.
+
+Reliability Strategy
+
+The reliability of Veritas comes from layered validation rather than relying on a single testing method.
+Manual testing ensures the entire workflow behaves correctly under real usage conditions.
+Unit testing guarantees that every agent behaves predictably in isolation.
+API testing confirms stable interaction with external services.
+Finally, the CritiqueAgent provides an additional internal quality check by reviewing generated outputs before they are finalized.
+This combination creates a stronger validation framework that improves both system stability and output quality.
+
+Outcome
+Testing demonstrated that Veritas performs reliably across multiple stages of the research pipeline.
+The system was able to:
+Execute end-to-end workflows consistently
+Process external data sources safely
+Generate structured research reports
+Recover gracefully from invalid inputs
+Maintain modular reliability across agents
+These testing layers ensure that Veritas is not only functional, but also dependable and scalable for future expansion.
