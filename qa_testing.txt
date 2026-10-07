@@ -1,10 +1,10 @@
-Testing & Validation for Veritas
-Building a multi-agent system requires more than functional code — it requires confidence that every component behaves reliably both independently and as part of a larger workflow. Since Veritas relies on multiple agents working together to complete a research task, testing was designed to validate both individual agent correctness and system-wide coordination.
-The testing strategy focused on ensuring that the system produces stable outputs, handles failures gracefully, and maintains consistent behavior across different research scenarios.
-1. Manual Testing
+Testing & Validation for AgentForge (formerly Veritas)
+Building a multi-agent system requires more than functional code — it requires confidence that every component behaves reliably both independently and as part of a larger workflow. Since AgentForge relies on multiple agents working together to complete a research task, testing was designed to validate both individual agent correctness and system-wide coordination.
+The testing strategy combines an automated pytest test suite (`tests/`), an evaluation benchmark suite (`eval/`), and end-to-end integration verification.
+1. Manual & Workflow Testing
 Manual testing was performed to validate the entire research lifecycle from the moment a user submits a query to the generation of the final refined report.
 The purpose of manual testing was to observe how data moves across agents in real execution conditions and confirm that each stage produces meaningful outputs without interrupting the pipeline.
-In Veritas, the workflow follows a sequential multi-agent structure:
+In AgentForge, the workflow follows a sequential multi-agent structure:
 User Query
     ↓
 SearchAgent

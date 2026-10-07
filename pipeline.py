@@ -45,6 +45,7 @@ class Pipeline:
             self.manager.register_agent(reader_agent)
             
             writer_agent = WriterAgent(
+                api_key=self.config.groq_api_key,
                 config={
                     "model_name": "llama-3.3-70b-versatile",
                     "temperature": 0.5
@@ -93,6 +94,8 @@ class Pipeline:
             },
             "final_report": None,
             "critique_feedback": None,
+            "is_approved": False,
+            "critique_score": None,
             "error": None
         }
         
@@ -143,7 +146,9 @@ class Pipeline:
             result["stages"]["critique"] = critique_result
             
             if critique_result["success"]:
-                result["critique_feedback"] = critique_result["data"]["feedback"]
+                result["critique_feedback"] = critique_result["data"].get("feedback")
+                result["is_approved"] = critique_result["data"].get("is_approved", False)
+                result["critique_score"] = critique_result["data"].get("overall_score")
             
             result["success"] = True
             result["final_report"] = write_result["data"]["report"]
@@ -210,6 +215,12 @@ class Pipeline:
     ) -> Dict[str, Any]:
         """Execute the write stage."""
         try:
+            full_context_len = sum(len(item.get("content", "")) for item in research_data)
+            estimated_tokens = full_context_len // 4
+            estimated_cost_usd = (estimated_tokens / 1_000_000) * 0.59
+            self.logger.info(f"Estimated context tokens: ~{estimated_tokens:,}")
+            self.logger.info(f"Estimated LLM input cost: ~${estimated_cost_usd:.4f}")
+
             writer_agent = self.manager.get_agent("WriterAgent")
             result = writer_agent.execute({
                 "topic": topic,

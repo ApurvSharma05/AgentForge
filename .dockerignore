@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+__pycache__
+*.pyc
+*.pyo
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+.git/
+.gitignore
+*.json

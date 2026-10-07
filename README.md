@@ -139,15 +139,31 @@ Each component functions independently, allowing developers to extend the system
 ```bash
 agentforge/
 │
-├── base_agent.py        # Core architecture shared by all agents
-├── search_agent.py      # Web research agent
-├── reader_agent.py      # Content extraction agent
-├── writer_agent.py      # Report generation agent
-├── critique_agent.py    # Quality evaluation agent
-├── config.py            # Environment configuration
-├── requirements.txt     # Dependencies
-├── .env                 # API keys
-└── README.md            # Documentation
+├── base_agent.py             # Shared abstract base class for all agents
+├── search_agent.py           # SerpAPI search agent with tenacity exponential backoff
+├── reader_agent.py           # BeautifulSoup scraping agent with parallel ThreadPoolExecutor
+├── writer_agent.py           # Groq Llama-3.3-70B report drafting agent with token cost guard
+├── critique_agent.py         # Structured Pydantic critique agent with 1-10 quality rubric
+├── pipeline.py               # Orchestrator managing sequential execution and logging
+├── agent_manager.py          # Dynamic agent registry and lifecycle manager
+├── api.py                    # FastAPI REST serving layer (/health, /research)
+├── app.py                    # Dark-themed Streamlit interactive web application
+├── config.py                 # Configuration and environment variable loader
+├── utils.py                  # Shared helpers for logging, formatting, and file export
+├── tests/                    # Comprehensive unit and integration test suite (21 tests)
+│   ├── test_search_agent.py
+│   ├── test_reader_agent.py
+│   ├── test_writer_agent.py
+│   ├── test_critique_agent.py
+│   ├── test_pipeline.py
+│   └── test_api.py
+├── eval/                     # Evaluation benchmark suite with golden topics
+│   └── run_eval.py
+├── Dockerfile                # Production container deployment definition
+├── requirements_minimal.txt  # Curated, lightweight dependencies list
+├── requirements.txt          # Full locked environment dependencies
+├── .env.example              # Template environment variables (safe for version control)
+└── README.md                 # System documentation
 ```
 
 ---
@@ -272,51 +288,110 @@ Before final output, CritiqueAgent reviews generated content for gaps and improv
 
 ---
 
-# Installation
+# Quick Start & Installation
 
-## Clone Repository
+## 1. Clone & Set Up Environment
 
 ```bash
 git clone <your-repository-url>
-cd agentforge
-```
-
----
-
-## Create Virtual Environment
-
-### Windows
-
-```bash
+cd multi-agent
 python -m venv venv
-venv\Scripts\activate
+venv\Scripts\activate       # Windows
+# or: source venv/bin/activate  # macOS / Linux
 ```
 
-### macOS/Linux
+## 2. Install Dependencies
+
+You can install either the curated minimal dependencies or the full locked environment:
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-```
+# Curated lightweight installation (recommended):
+pip install -r requirements_minimal.txt
 
----
-
-## Install Dependencies
-
-```bash
+# Or full locked dependencies:
 pip install -r requirements.txt
 ```
 
----
+## 3. Configure API Keys
 
-## Setup Environment Variables
+Copy `.env.example` to `.env` and fill in your API keys:
 
-Create a `.env` file.
+```bash
+cp .env.example .env
+```
 
 ```env
-SERP_API_KEY=your_serp_api_key
-GROQ_API_KEY=your_groq_api_key
+SERP_API_KEY=your_serpapi_key_here
+GROQ_API_KEY=your_groq_api_key_here
+LOG_LEVEL=INFO
+SEARCH_TIMEOUT=15
+SEARCH_MAX_RESULTS=10
 ```
+
+---
+
+# Running AgentForge
+
+### Option A: Interactive Streamlit Web UI
+
+```bash
+streamlit run app.py
+```
+Open [http://localhost:8501](http://localhost:8501) in your browser. Configure search depth, execute research queries, view real-time progress, read structured reports and 1-10 critique scores, and download results in Markdown or JSON format.
+
+### Option B: FastAPI REST Serving Layer
+
+AgentForge can be run as a headless REST microservice:
+
+```bash
+uvicorn api:app --reload --port 8000
+```
+Interactive Swagger documentation is auto-generated at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+- `GET /health`: Health check and system readiness
+- `POST /research`: Execute research pipeline programmatically with request payload `{"topic": "...", "num_results": 5, "max_pages": 3}`
+
+### Option C: Docker Container
+
+Build and run the lightweight container (injecting API keys at runtime):
+
+```bash
+docker build -t agentforge .
+docker run -p 8501:8501 -e SERP_API_KEY="your_key" -e GROQ_API_KEY="your_key" agentforge
+```
+
+---
+
+# Testing & Quality Evaluation
+
+### Automated Test Suite (pytest)
+
+The project includes an executable 21-test suite covering all agents, edge cases, tenacity exponential retries, and API endpoints with mocked network calls:
+
+```bash
+pytest tests/ -v
+```
+
+### Reproducible Quality Evaluation (Eval Suite)
+
+The evaluation suite benchmarks report quality against golden topics, verifying minimum length, section coverage, and critique scores:
+
+```bash
+# Run via pytest:
+pytest eval/run_eval.py -v
+
+# Or run the benchmark script directly (requires live keys):
+python eval/run_eval.py
+```
+
+---
+
+# Limitations
+
+- **JavaScript Rendering**: Web scraping relies on BeautifulSoup and `requests`. Heavy Single-Page Applications (SPAs) built with React/Vue that render content purely via client-side JavaScript will yield minimal text.
+- **Search Dependency**: Research report quality depends on Google search results indexed and retrieved via SerpAPI.
+- **Hallucination Risk**: While multi-page grounding and critique significantly reduce hallucinations, LLMs can occasionally generate statements not strictly present in source texts.
+- **API Rate Limits**: Subject to external rate limits from SerpAPI and Groq depending on your subscription tier.
 
 ---
 

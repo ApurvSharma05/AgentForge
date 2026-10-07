@@ -3,9 +3,13 @@ Search Agent for the multi-agent system.
 Uses Serp API to search the internet and collect information.
 """
 
+import logging
 import requests
 from typing import Any, Dict, List, Optional
+from tenacity import retry, stop_after_attempt, wait_exponential
 from base_agent import BaseAgent
+
+logger = logging.getLogger("MultiAgentSystem")
 
 
 class SearchAgent(BaseAgent):
@@ -103,6 +107,11 @@ class SearchAgent(BaseAgent):
                 "data": None
             }
     
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        reraise=True
+    )
     def _search(self, query: str, num_results: int) -> List[Dict[str, Any]]:
         """
         Perform the actual search using SerpAPI.

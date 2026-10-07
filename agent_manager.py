@@ -1,5 +1,8 @@
+import logging
 from typing import Any, Dict, List, Optional
 from base_agent import BaseAgent
+
+logger = logging.getLogger("MultiAgentSystem")
 
 
 class AgentManager:
@@ -19,7 +22,7 @@ class AgentManager:
             raise ValueError(f"Agent with name '{agent.name}' is already registered.")
         
         self.agents[agent.name] = agent
-        print(f"✓ Agent registered: {agent.name}")
+        logger.info(f"✓ Agent registered: {agent.name}")
         return True
     
     def unregister_agent(self, agent_name: str) -> bool:
@@ -30,7 +33,7 @@ class AgentManager:
             return False
         
         del self.agents[agent_name]
-        print(f"✓ Agent unregistered: {agent_name}")
+        logger.info(f"✓ Agent unregistered: {agent_name}")
         return True
     
     def get_agent(self, agent_name: str) -> Optional[BaseAgent]:
