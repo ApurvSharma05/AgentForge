@@ -663,7 +663,7 @@ The project's [README.md](file:///d:/Desktop/PROJECTS/AgentForge/README.md) and 
 #### HQ1: "CritiqueAgent uses the exact same model (`llama-3.3-70b-versatile`) as WriterAgent. Doesn't that introduce severe self-preference bias, and how would you fix it?"
 **Strong Answer Must Include:**
 - **Acknowledge the LLM-as-a-Judge Bias:** Models have documented self-preference biases (favoring their own stylistic quirks, vocabulary, and sentence structures) and are blind to their own factual blind spots when evaluating their own outputs.
-- **Cross-Model Arbitration:** Replace or supplement the critic with a distinct model family from another provider—for instance, using Anthropic's Claude 3.5 Sonnet or OpenAI's GPT-4o as the judge while Llama 3.3 acts as the writer.
+- **Cross-Model Arbitration:** Replace or supplement the critic with a distinct model family from another provider—for instance, using OpenAI's GPT-4o or Google's Gemini as the judge while Llama 3.3 acts as the writer.
 - **Source-Grounded Evaluation Metrics:** Free-form prompting should be replaced with deterministic evaluation frameworks like RAGAS or TruLens, measuring:
   1. *Faithfulness:* What fraction of claims in the generated report can be directly mapped to sentences in the scraped source text?
   2. *Answer Relevance:* Did the report address all aspects of the original topic?
