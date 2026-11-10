@@ -56,7 +56,8 @@ class ReaderAgent(BaseAgent):
         Args:
             input_data: Dictionary containing:
                 - urls (List[str]): List of URLs to scrape
-                - max_pages (int, optional): Limit number of pages to process
+                - max_pages (int, optional): Number of pages to read successfully (default 3);
+                  failed pages are replaced by later URLs in the list
         Returns:
             Dictionary containing scraped content and status
         """
@@ -68,27 +69,36 @@ class ReaderAgent(BaseAgent):
             }
         urls = input_data.get("urls", [])
         max_pages = input_data.get("max_pages", 3)
-        targets = urls[:max_pages]
-        
+
+        # Candidates are tried in rank order. Failed (or empty) pages are
+        # backfilled from the remaining candidates until max_pages succeed
+        # or the candidates run out.
         scraped_contents = []
         errors = []
+        next_idx = 0
 
-        if targets:
-            workers = min(len(targets), self.max_workers)
-            logger.info(f"[{self.name}] Scraping {len(targets)} pages with {workers} parallel workers")
+        while len(scraped_contents) < max_pages and next_idx < len(urls):
+            needed = max_pages - len(scraped_contents)
+            batch = urls[next_idx:next_idx + needed]
+            next_idx += len(batch)
+
+            workers = min(len(batch), self.max_workers)
+            logger.info(f"[{self.name}] Scraping {len(batch)} pages with {workers} parallel workers")
             with ThreadPoolExecutor(max_workers=workers) as executor:
-                future_to_url = {executor.submit(self._scrape_url, url): url for url in targets}
+                future_to_url = {executor.submit(self._scrape_url, url): url for url in batch}
                 for future in as_completed(future_to_url):
                     url = future_to_url[future]
                     try:
                         content = future.result()
-                        scraped_contents.append({
-                            "url": url,
-                            "content": content
-                        })
                     except Exception as e:
                         logger.warning(f"[{self.name}] Failed to scrape {url}: {str(e)}")
                         errors.append({"url": url, "error": str(e)})
+                        continue
+                    if not content.strip():
+                        logger.warning(f"[{self.name}] No extractable text at {url}")
+                        errors.append({"url": url, "error": "No extractable text"})
+                        continue
+                    scraped_contents.append({"url": url, "content": content})
 
         self.update_execution_time()
 

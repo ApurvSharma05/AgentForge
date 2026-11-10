@@ -90,3 +90,62 @@ def test_reader_retry_on_network_failure():
     assert result["success"] is True
     assert "Recovered content" in result["data"]["scraped_contents"][0]["content"]
     assert mock_get.call_count == 2
+
+
+def test_reader_backfills_failed_pages():
+    agent = ReaderAgent()
+    urls = [f"https://example.com/{i}" for i in range(5)]
+
+    def fake_scrape(url):
+        if url.endswith(("/0", "/1")):
+            raise requests.exceptions.HTTPError("404")
+        return f"content of {url}"
+
+    # Patch _scrape_url directly so the tenacity wait is skipped.
+    with patch.object(agent, "_scrape_url", side_effect=fake_scrape) as mock_scrape:
+        result = agent.execute({"urls": urls, "max_pages": 3})
+
+    assert result["success"] is True
+    got = sorted(item["url"] for item in result["data"]["scraped_contents"])
+    assert got == ["https://example.com/2", "https://example.com/3", "https://example.com/4"]
+    assert len(result["data"]["errors"]) == 2
+    assert mock_scrape.call_count == 5
+
+
+def test_reader_stops_when_candidates_run_out():
+    agent = ReaderAgent()
+    urls = ["https://example.com/a", "https://example.com/b", "https://example.com/c"]
+
+    def fake_scrape(url):
+        if url.endswith("/a"):
+            return "only good page"
+        raise requests.exceptions.Timeout("boom")
+
+    with patch.object(agent, "_scrape_url", side_effect=fake_scrape):
+        result = agent.execute({"urls": urls, "max_pages": 3})
+
+    assert result["success"] is True
+    assert result["data"]["pages_processed"] == 1
+    assert len(result["data"]["errors"]) == 2
+
+
+def test_reader_does_not_read_more_than_needed():
+    agent = ReaderAgent()
+    urls = [f"https://example.com/{i}" for i in range(6)]
+    with patch.object(agent, "_scrape_url", return_value="ok") as mock_scrape:
+        result = agent.execute({"urls": urls, "max_pages": 2})
+    assert result["data"]["pages_processed"] == 2
+    assert mock_scrape.call_count == 2
+
+
+def test_reader_treats_empty_text_as_failure_and_backfills():
+    agent = ReaderAgent()
+    urls = ["https://example.com/js-only", "https://example.com/real"]
+
+    def fake_scrape(url):
+        return "" if "js-only" in url else "real text"
+
+    with patch.object(agent, "_scrape_url", side_effect=fake_scrape):
+        result = agent.execute({"urls": urls, "max_pages": 1})
+
+    assert [i["url"] for i in result["data"]["scraped_contents"]] == ["https://example.com/real"]

@@ -1,4 +1,4 @@
-Testing & Validation for AgentForge (formerly Veritas)
+Testing & Validation for AgentForge (formerly AgentForge)
 Building a multi-agent system requires more than functional code — it requires confidence that every component behaves reliably both independently and as part of a larger workflow. Since AgentForge relies on multiple agents working together to complete a research task, testing was designed to validate both individual agent correctness and system-wide coordination.
 The testing strategy combines an automated pytest test suite (`tests/`), an evaluation benchmark suite (`eval/`), and end-to-end integration verification.
 1. Manual & Workflow Testing
@@ -33,7 +33,7 @@ Realistic usability from a user perspective
 The system completed the workflow successfully under normal conditions, producing research outputs without pipeline failure or interruption.
 2. Unit Testing
 While manual testing validates the entire system, unit testing focuses on validating each component independently.
-In Veritas, every agent performs a specific responsibility. Because each module is isolated by design, unit testing becomes essential for ensuring that one faulty component does not compromise the entire workflow.
+In AgentForge, every agent performs a specific responsibility. Because each module is isolated by design, unit testing becomes essential for ensuring that one faulty component does not compromise the entire workflow.
 Each agent was tested independently using controlled inputs and expected outputs.
 SearchAgent Testing
 
@@ -89,7 +89,7 @@ Testing ensured that the critique stage acts as a meaningful refinement layer ra
 This test verifies whether ReaderAgent successfully processes a valid webpage input and returns a successful response structure.
 
 3. API Testing
-Veritas depends on external APIs for search retrieval and language generation. Because third-party services can introduce instability, API testing was performed to validate integration reliability.
+AgentForge depends on external APIs for search retrieval and language generation. Because third-party services can introduce instability, API testing was performed to validate integration reliability.
 The system integrates with:
 SerpAPI for search functionality
 Groq API for language generation and critique workflows
@@ -107,7 +107,7 @@ This validation is important because multi-agent systems depend heavily on exter
 
 Reliability Strategy
 
-The reliability of Veritas comes from layered validation rather than relying on a single testing method.
+The reliability of AgentForge comes from layered validation rather than relying on a single testing method.
 Manual testing ensures the entire workflow behaves correctly under real usage conditions.
 Unit testing guarantees that every agent behaves predictably in isolation.
 API testing confirms stable interaction with external services.
@@ -115,11 +115,11 @@ Finally, the CritiqueAgent provides an additional internal quality check by revi
 This combination creates a stronger validation framework that improves both system stability and output quality.
 
 Outcome
-Testing demonstrated that Veritas performs reliably across multiple stages of the research pipeline.
+Testing demonstrated that AgentForge performs reliably across multiple stages of the research pipeline.
 The system was able to:
 Execute end-to-end workflows consistently
 Process external data sources safely
 Generate structured research reports
 Recover gracefully from invalid inputs
 Maintain modular reliability across agents
-These testing layers ensure that Veritas is not only functional, but also dependable and scalable for future expansion.
+These testing layers ensure that AgentForge is not only functional, but also dependable and scalable for future expansion.

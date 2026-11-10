@@ -54,3 +54,46 @@ def test_critique_fallback_handling():
 
     assert result["success"] is True
     assert result["data"]["is_approved"] is False
+
+
+def _structured(score, recommendation, is_approved):
+    return CritiqueResult(
+        overall_score=score,
+        recommendation=recommendation,
+        is_approved=is_approved,
+    )
+
+
+def test_critique_recomputes_is_approved_from_score():
+    agent = CritiqueAgent(api_key="fake_groq_key")
+    # The model claims approval with a low score: code must override it.
+    with patch.object(agent, "_invoke_structured", return_value=_structured(5, "Pass", True)):
+        low = agent.execute({"topic": "T", "report": "R"})
+    assert low["data"]["is_approved"] is False
+
+    # The model denies approval although score and recommendation qualify.
+    with patch.object(agent, "_invoke_structured", return_value=_structured(8, "Pass", False)):
+        high = agent.execute({"topic": "T", "report": "R"})
+    assert high["data"]["is_approved"] is True
+
+    # High score but recommendation is Revise.
+    with patch.object(agent, "_invoke_structured", return_value=_structured(9, "Revise", True)):
+        revise = agent.execute({"topic": "T", "report": "R"})
+    assert revise["data"]["is_approved"] is False
+
+
+def _fallback(text):
+    agent = CritiqueAgent(api_key="fake_groq_key")
+    response = MagicMock()
+    response.content = text
+    with patch.object(agent, "_invoke_structured", side_effect=Exception("parse error")):
+        with patch.object(agent, "_invoke_fallback_chain", return_value=response):
+            return agent.execute({"topic": "T", "report": "R"})
+
+
+def test_critique_fallback_pass_requires_whole_word():
+    # "Passage" and "Passing" must not count as "Pass".
+    assert _fallback("The passage on risks is weak. Passing remarks only.")["data"]["is_approved"] is False
+    assert _fallback("Recommendation: Pass")["data"]["is_approved"] is True
+    assert _fallback("Recommendation: Revise. Does not Pass yet.")["data"]["is_approved"] is False
+    assert _fallback("Overall verdict: Pass.")["data"]["is_approved"] is True

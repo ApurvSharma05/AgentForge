@@ -105,3 +105,42 @@ def test_pipeline_search_failure_halts_flow(mock_config):
         assert result["error"] == "Search stage failed"
         assert result["stages"]["read"] is None
         assert result["stages"]["write"] is None
+
+
+def test_pipeline_critique_failure_is_not_reported_as_success(mock_config):
+    with patch("pipeline.SearchAgent"), \
+         patch("pipeline.ReaderAgent"), \
+         patch("pipeline.WriterAgent"), \
+         patch("pipeline.CritiqueAgent"):
+        pipeline = Pipeline(mock_config)
+
+        pipeline._execute_search_stage = MagicMock(return_value={
+            "success": True,
+            "data": {"results": [{"title": "R1", "link": "https://example.com/1"}]}
+        })
+        pipeline._execute_read_stage = MagicMock(return_value={
+            "success": True,
+            "data": {
+                "scraped_contents": [{"url": "https://example.com/1", "content": "Text 1"}],
+                "errors": [{"url": "https://example.com/0", "error": "404"}]
+            }
+        })
+        pipeline._execute_write_stage = MagicMock(return_value={
+            "success": True,
+            "data": {"report": "# Report"}
+        })
+        pipeline._execute_critique_stage = MagicMock(return_value={
+            "success": False,
+            "error": "Groq execution failed: timeout"
+        })
+
+        result = pipeline.execute("AI Robotics", save_results=False)
+
+        # The report is kept, but the run is not a clean success.
+        assert result["final_report"] == "# Report"
+        assert result["success"] is False
+        assert result["critique_failed"] is True
+        assert result["critique_score"] is None
+        assert "Critique stage failed" in result["error"]
+        assert any("Critique stage failed" in w for w in result["warnings"])
+        assert any("could not be read" in w for w in result["warnings"])

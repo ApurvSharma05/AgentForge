@@ -55,7 +55,9 @@ class WriterAgent(BaseAgent):
         ]
         full_context = "\n\n---\n\n".join(context_blocks)
 
-        # Context safety guard: truncate if context exceeds 100k chars (~25k tokens)
+        # Safety net only. With the current limits (max 10 pages x 5,000 chars/page = 50k chars)
+        # this cannot trigger. It exists in case max_pages or max_chars_per_page are raised later.
+        # 100k chars is ~25k tokens, well inside the model's context window.
         MAX_SAFE_CHARS = 100_000
         if len(full_context) > MAX_SAFE_CHARS:
             logger.warning(f"[{self.name}] Context size ({len(full_context):,} chars) exceeds safety limit. Truncating to {MAX_SAFE_CHARS:,} chars.")

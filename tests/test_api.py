@@ -52,3 +52,43 @@ def test_api_research_invalid_topic():
         "max_pages": 2
     })
     assert response.status_code == 422
+
+
+def test_api_research_no_report_returns_502():
+    mock_pipeline = MagicMock()
+    mock_pipeline.execute.return_value = {
+        "success": False,
+        "topic": "Neuromorphic Computing",
+        "final_report": None,
+        "error": "Search stage failed",
+        "timestamp": "2026-10-07T12:00:00",
+    }
+    with patch("api.get_pipeline", return_value=mock_pipeline):
+        response = client.post("/research", json={"topic": "Neuromorphic Computing"})
+
+    assert response.status_code == 502
+    data = response.json()
+    assert data["success"] is False
+    assert data["error"] == "Search stage failed"
+
+
+def test_api_research_critique_failure_is_exposed():
+    mock_pipeline = MagicMock()
+    mock_pipeline.execute.return_value = {
+        "success": False,
+        "topic": "Neuromorphic Computing",
+        "final_report": "# Report",
+        "critique_failed": True,
+        "warnings": ["Critique stage failed: timeout"],
+        "error": "Critique stage failed: timeout",
+        "timestamp": "2026-10-07T12:00:00",
+    }
+    with patch("api.get_pipeline", return_value=mock_pipeline):
+        response = client.post("/research", json={"topic": "Neuromorphic Computing"})
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is False
+    assert data["critique_failed"] is True
+    assert data["final_report"] == "# Report"
+    assert data["warnings"] == ["Critique stage failed: timeout"]
