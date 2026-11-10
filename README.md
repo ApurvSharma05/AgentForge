@@ -150,7 +150,7 @@ agentforge/
 ├── app.py                    # Dark-themed Streamlit interactive web application
 ├── config.py                 # Configuration and environment variable loader
 ├── utils.py                  # Shared helpers for logging, formatting, and file export
-├── tests/                    # Comprehensive unit and integration test suite (21 tests)
+├── tests/                    # Comprehensive unit and integration test suite (30 tests)
 │   ├── test_search_agent.py
 │   ├── test_reader_agent.py
 │   ├── test_writer_agent.py
@@ -349,7 +349,7 @@ uvicorn api:app --reload --port 8000
 Interactive Swagger documentation is auto-generated at [http://localhost:8000/docs](http://localhost:8000/docs).
 
 - `GET /health`: Health check and system readiness
-- `POST /research`: Execute research pipeline programmatically with request payload `{"topic": "...", "num_results": 5, "max_pages": 3}`
+- `POST /research`: Execute research pipeline programmatically with request payload `{"topic": "...", "num_results": 5, "max_pages": 3}`. Returns HTTP 200 with `success=true` on a full run; `success=false` with `critique_failed=true` (report still returned) if only the critique failed; HTTP 502 if no report could be produced.
 
 ### Option C: Docker Container
 
@@ -366,7 +366,7 @@ docker run -p 8501:8501 -e SERP_API_KEY="your_key" -e GROQ_API_KEY="your_key" ag
 
 ### Automated Test Suite (pytest)
 
-The project includes an executable 21-test suite covering all agents, edge cases, tenacity exponential retries, and API endpoints with mocked network calls:
+The project includes an executable 30-test suite covering all agents, edge cases, tenacity exponential retries, and API endpoints with mocked network calls:
 
 ```bash
 pytest tests/ -v

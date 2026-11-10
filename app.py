@@ -383,6 +383,8 @@ def render_execution_progress(pipeline, topic, num_results, max_pages, save_resu
         
         if result["success"]:
             st.success(f"✓ Completed in {elapsed:.1f}s")
+        elif result.get("final_report"):
+            st.warning(f"Report generated, but: {result['error']}")
         else:
             st.error(f"Failed: {result['error']}")
         
@@ -396,11 +398,14 @@ def render_execution_progress(pipeline, topic, num_results, max_pages, save_resu
 
 def render_results(result):
     """Render the execution results."""
-    if not result or not result.get("success"):
+    # A report is shown even if the critique failed (success is False in that case).
+    if not result or not result.get("final_report"):
         return
     
     st.markdown("---")
     st.markdown("## Results")
+    for warning in result.get("warnings") or []:
+        st.warning(warning)
     
     col1, col2, col3, col4 = st.columns(4)
     
@@ -426,7 +431,7 @@ def render_results(result):
         st.markdown(f"""
         <div class="stat-card">
             <div class="stat-label">Status</div>
-            <div class="stat-value">✓</div>
+            <div class="stat-value">{"✓" if result.get("success") else "!"}</div>
         </div>
         """, unsafe_allow_html=True)
     

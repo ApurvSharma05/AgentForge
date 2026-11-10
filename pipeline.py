@@ -96,6 +96,8 @@ class Pipeline:
             "critique_feedback": None,
             "is_approved": False,
             "critique_score": None,
+            "critique_failed": False,
+            "warnings": [],
             "error": None
         }
         
@@ -124,6 +126,10 @@ class Pipeline:
             if not read_result["success"]:
                 result["error"] = "Read stage failed"
                 return result
+
+            read_errors = (read_result["data"] or {}).get("errors")
+            if read_errors:
+                result["warnings"].append(f"{len(read_errors)} page(s) could not be read and were skipped")
             
             # Write
             self.logger.info(f"[Stage 3] Generating comprehensive report")
@@ -145,13 +151,22 @@ class Pipeline:
             )
             result["stages"]["critique"] = critique_result
             
+            # The report is kept whatever the critique does. "success" means the whole
+            # run completed: report written AND critique completed. If only the critique
+            # fails, success is False, critique_failed is True, and error/warnings say why.
+            result["final_report"] = write_result["data"]["report"]
+
             if critique_result["success"]:
                 result["critique_feedback"] = critique_result["data"].get("feedback")
                 result["is_approved"] = critique_result["data"].get("is_approved", False)
                 result["critique_score"] = critique_result["data"].get("overall_score")
-            
-            result["success"] = True
-            result["final_report"] = write_result["data"]["report"]
+                result["success"] = True
+            else:
+                message = f"Critique stage failed: {critique_result.get('error') or 'unknown error'}"
+                result["critique_failed"] = True
+                result["warnings"].append(message)
+                result["error"] = message
+                self.logger.warning(f"{message} (report returned without critique)")
             
             if save_results:
                 filename = f"pipeline_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
@@ -161,7 +176,8 @@ class Pipeline:
             pipeline_end = datetime.now()
             duration = (pipeline_end - pipeline_start).total_seconds()
             self.logger.info(f"\n{'='*60}")
-            self.logger.info(f"✓ Pipeline completed successfully in {duration:.2f}s")
+            status = "completed successfully" if result["success"] else "finished with a failed critique"
+            self.logger.info(f"✓ Pipeline {status} in {duration:.2f}s")
             self.logger.info(f"{'='*60}\n")
             
             self.execution_history.append(result)
@@ -169,6 +185,7 @@ class Pipeline:
             
         except Exception as e:
             self.logger.error(f"✗ Pipeline execution failed: {str(e)}")
+            result["success"] = False
             result["error"] = str(e)
             return result
     

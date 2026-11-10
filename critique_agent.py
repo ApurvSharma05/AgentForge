@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
@@ -18,8 +19,27 @@ class CritiqueResult(BaseModel):
     critical_gaps: List[str] = Field(default_factory=list, description="Specific areas needing expansion or correction")
     priority_improvements: List[str] = Field(default_factory=list, description="Top 3 actionable enhancements")
     recommendation: str = Field(..., description="Recommendation: 'Pass' or 'Revise'")
-    is_approved: bool = Field(..., description="True if overall_score >= 7 and recommendation == 'Pass'")
+    is_approved: bool = Field(..., description="Set by the model, but always recomputed in code (score >= 7 and recommendation 'Pass')")
     detailed_feedback: Optional[str] = Field(default="", description="Detailed qualitative feedback")
+
+
+APPROVAL_MIN_SCORE = 7
+
+
+def compute_approval(score: int, recommendation: str) -> bool:
+    """Approval rule, applied in code: score >= 7 and recommendation is exactly 'Pass'."""
+    return score >= APPROVAL_MIN_SCORE and recommendation.strip().lower() == "pass"
+
+
+def infer_approval_from_text(feedback: str) -> bool:
+    """
+    Heuristic for the plain-text fallback. Prefers an explicit 'Recommendation: Pass/Revise'
+    line; otherwise looks for the whole word 'Pass' (not 'Passage') or a 'Score: 7-10' mention.
+    """
+    match = re.search(r"Recommendation\W*(Pass|Revise)\b", feedback, re.IGNORECASE)
+    if match:
+        return match.group(1).lower() == "pass"
+    return bool(re.search(r"\bPass\b", feedback) or re.search(r"\bScore:\s*(?:10|[7-9])(?!\d)", feedback))
 
 
 class CritiqueAgent(BaseAgent):
@@ -98,6 +118,8 @@ class CritiqueAgent(BaseAgent):
             prompt_text = prompt.format(topic=topic, report=report_content)
             structured_llm = self.llm.with_structured_output(CritiqueResult)
             critique: CritiqueResult = self._invoke_structured(structured_llm, prompt_text)
+            # Do not trust the model's own is_approved flag; recompute it from the score.
+            critique.is_approved = compute_approval(critique.overall_score, critique.recommendation)
 
             feedback_md = (
                 f"### Overall Score: {critique.overall_score}/10\n"
@@ -128,7 +150,7 @@ class CritiqueAgent(BaseAgent):
                 chain = prompt | self.llm
                 response = self._invoke_fallback_chain(chain, {"topic": topic, "report": report_content})
                 feedback = response.content
-                is_approved = "Pass" in feedback or any(f"Score: {s}" in feedback for s in ["7", "8", "9", "10"])
+                is_approved = infer_approval_from_text(feedback)
                 
                 if hasattr(self, 'update_execution_time'):
                     self.update_execution_time()
